@@ -10,8 +10,9 @@ const wrapper = document.querySelector(".wrapper"),
   progressBar = progressArea.querySelector(".progress-bar"),
   musicList = wrapper.querySelector(".music-list"),
   moreMusicBtn = wrapper.querySelector("#more-music"),
-  closeMoreMusic = musicList.querySelector("#close");
-time = progressArea.querySelector(".time");
+  closeMoreMusic = musicList.querySelector("#close"),
+  body = document.querySelector("body"),
+  time = progressArea.querySelector(".time");
 
 let musicIndex = Math.floor(Math.random() * allMusic.length + 1);
 (isMusicPaused = true), (isDrag = false);
@@ -176,6 +177,11 @@ document.addEventListener("mousemove", (e) => {
     check = false;
     progressBar.style.width = `${percent}%`;
   }
+});
+
+body.addEventListener("mouseup", (e) => {
+  e.stopPropagation();
+  isDrag = false;
 });
 
 document.addEventListener("mouseup", (e) => {
