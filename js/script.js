@@ -19,7 +19,8 @@ let musicIndex = Math.floor(Math.random() * allMusic.length + 1);
 let clientX,
   left,
   percent,
-  timer = 0;
+  timer,
+  check = false;
 
 function clientProgress(e) {
   clientX = e.clientX;
@@ -84,28 +85,40 @@ function nextMusic() {
 }
 
 // play or pause button event
-playPauseBtn.addEventListener("click", () => {
+playPauseBtn.addEventListener("click", (e) => {
+  check = true;
+  e.stopPropagation();
   const isMusicPlay = wrapper.classList.contains("paused");
   isMusicPlay ? pauseMusic() : playMusic();
   playingSong();
 });
 
+playPauseBtn.addEventListener("mousedown", (e) => {
+  e.stopPropagation();
+  check = true;
+});
+
+playPauseBtn.addEventListener("mouseup", (e) => {
+  e.stopPropagation();
+});
+
 //prev music button event
-prevBtn.addEventListener("click", () => {
+prevBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
   prevMusic();
 });
 
 //next music button event
-nextBtn.addEventListener("click", () => {
+nextBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
   nextMusic();
 });
-
-let check = false;
 
 // update progress bar width according to music current time
 mainAudio.addEventListener("timeupdate", (e) => {
   const currentTime = e.target.currentTime;
   const duration = e.target.duration;
+
   if (check) {
     let progressWidth = (currentTime / duration) * 100;
     progressBar.style.width = `${progressWidth}%`;
@@ -149,7 +162,6 @@ progressArea.addEventListener("mousedown", (e) => {
 });
 
 document.addEventListener("mousemove", (e) => {
-  check = false;
   clientProgress(e);
   const min = left;
   const max = progressArea.getBoundingClientRect().width + left;
@@ -161,13 +173,14 @@ document.addEventListener("mousemove", (e) => {
   }
 
   if (isDrag) {
+    check = false;
     progressBar.style.width = `${percent}%`;
   }
 });
 
 document.addEventListener("mouseup", (e) => {
-  check = true;
   isDrag = false;
+  check = true;
   mainAudio.currentTime = (timer * mainAudio.duration) / 100;
 });
 
@@ -256,7 +269,7 @@ for (let i = 0; i < allMusic.length; i++) {
 }
 
 //play particular song from the list onclick of li tag
-function playingSong() {
+function playingSong(e) {
   const allLiTag = ulTag.querySelectorAll("li");
 
   for (let j = 0; j < allLiTag.length; j++) {
