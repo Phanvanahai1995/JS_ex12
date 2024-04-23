@@ -16,7 +16,10 @@ time = progressArea.querySelector(".time");
 let musicIndex = Math.floor(Math.random() * allMusic.length + 1);
 (isMusicPaused = true), (isDrag = false);
 
-let clientX, left, percent, timer;
+let clientX,
+  left,
+  percent,
+  timer = 0;
 
 function clientProgress(e) {
   clientX = e.clientX;
@@ -97,12 +100,16 @@ nextBtn.addEventListener("click", () => {
   nextMusic();
 });
 
+let check = false;
+
 // update progress bar width according to music current time
 mainAudio.addEventListener("timeupdate", (e) => {
   const currentTime = e.target.currentTime;
   const duration = e.target.duration;
-  let progressWidth = (currentTime / duration) * 100;
-  progressBar.style.width = `${progressWidth}%`;
+  if (check) {
+    let progressWidth = (currentTime / duration) * 100;
+    progressBar.style.width = `${progressWidth}%`;
+  }
 
   let musicCurrentTime = wrapper.querySelector(".current-time"),
     musicDuration = wrapper.querySelector(".max-duration");
@@ -129,34 +136,39 @@ mainAudio.addEventListener("timeupdate", (e) => {
 
 // update playing song currentTime on according to the progress bar width
 progressArea.addEventListener("mousedown", (e) => {
-  isDrag = true;
-  clientProgress(e);
-  const percent = ((clientX - left) * 100) / width;
-  progressBar.style.width = `${percent}%`;
-  mainAudio.currentTime = (percent * mainAudio.duration) / 100;
+  if (e.which === 1) {
+    isDrag = true;
+    clientProgress(e);
+    const percent = ((clientX - left) * 100) / width;
+    progressBar.style.width = `${percent}%`;
+    mainAudio.currentTime = (percent * mainAudio.duration) / 100;
 
-  playMusic(); //calling playMusic function
-  playingSong();
+    playMusic(); //calling playMusic function
+    playingSong();
+  }
 });
 
 document.addEventListener("mousemove", (e) => {
+  check = false;
   clientProgress(e);
   const min = left;
   const max = progressArea.getBoundingClientRect().width + left;
 
   if (clientX >= min && clientX <= max) {
     percent = ((clientX - left) * 100) / width;
+    timer = percent;
     timeProgress(percent);
   }
 
   if (isDrag) {
     progressBar.style.width = `${percent}%`;
-    mainAudio.currentTime = (percent * mainAudio.duration) / 100;
   }
 });
 
 document.addEventListener("mouseup", (e) => {
+  check = true;
   isDrag = false;
+  mainAudio.currentTime = (timer * mainAudio.duration) / 100;
 });
 
 //change loop, shuffle, repeat icon onclick
