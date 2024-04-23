@@ -10,9 +10,8 @@ const wrapper = document.querySelector(".wrapper"),
   progressBar = progressArea.querySelector(".progress-bar"),
   musicList = wrapper.querySelector(".music-list"),
   moreMusicBtn = wrapper.querySelector("#more-music"),
-  closeMoreMusic = musicList.querySelector("#close"),
-  body = document.querySelector("body"),
-  time = progressArea.querySelector(".time");
+  closeMoreMusic = musicList.querySelector("#close");
+time = progressArea.querySelector(".time");
 
 let musicIndex = Math.floor(Math.random() * allMusic.length + 1);
 (isMusicPaused = true), (isDrag = false);
@@ -41,6 +40,113 @@ function timeProgress(per) {
   time.style.left = `${per}%`;
 }
 
+window.addEventListener("load", () => {
+  loadMusic(musicIndex);
+  playingSong();
+});
+
+function loadMusic(indexNumb) {
+  musicName.innerText = allMusic[indexNumb - 1].name;
+  musicArtist.innerText = allMusic[indexNumb - 1].artist;
+  musicImg.src = `images/${allMusic[indexNumb - 1].src}.jpg`;
+  mainAudio.src = `songs/${allMusic[indexNumb - 1].src}.mp3`;
+}
+
+//play music function
+function playMusic() {
+  wrapper.classList.add("paused");
+  playPauseBtn.querySelector("i").innerText = "pause";
+  mainAudio.play();
+}
+
+//pause music function
+function pauseMusic() {
+  wrapper.classList.remove("paused");
+  playPauseBtn.querySelector("i").innerText = "play_arrow";
+  mainAudio.pause();
+}
+
+//prev music function
+function prevMusic() {
+  musicIndex--;
+  musicIndex < 1 ? (musicIndex = allMusic.length) : (musicIndex = musicIndex);
+  loadMusic(musicIndex);
+  playMusic();
+  playingSong();
+}
+
+//next music function
+function nextMusic() {
+  musicIndex++;
+  musicIndex > allMusic.length ? (musicIndex = 1) : (musicIndex = musicIndex);
+  loadMusic(musicIndex);
+  playMusic();
+  playingSong();
+}
+
+// play or pause button event
+playPauseBtn.addEventListener("click", (e) => {
+  check = true;
+  e.stopPropagation();
+  const isMusicPlay = wrapper.classList.contains("paused");
+  isMusicPlay ? pauseMusic() : playMusic();
+  playingSong();
+});
+
+playPauseBtn.addEventListener("mousedown", (e) => {
+  e.stopPropagation();
+  check = true;
+});
+
+playPauseBtn.addEventListener("mouseup", (e) => {
+  e.stopPropagation();
+});
+
+//prev music button event
+prevBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  prevMusic();
+});
+
+//next music button event
+nextBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  nextMusic();
+});
+
+// update progress bar width according to music current time
+mainAudio.addEventListener("timeupdate", (e) => {
+  const currentTime = e.target.currentTime;
+  const duration = e.target.duration;
+
+  if (check) {
+    let progressWidth = (currentTime / duration) * 100;
+    progressBar.style.width = `${progressWidth}%`;
+  }
+
+  let musicCurrentTime = wrapper.querySelector(".current-time"),
+    musicDuration = wrapper.querySelector(".max-duration");
+  mainAudio.addEventListener("loadeddata", () => {
+    // update song total duration
+    let mainAdDuration = mainAudio.duration;
+    let totalMin = Math.floor(mainAdDuration / 60);
+    let totalSec = Math.floor(mainAdDuration % 60);
+    if (totalSec < 10) {
+      //if sec is less than 10 then add 0 before it
+      totalSec = `0${totalSec}`;
+    }
+    musicDuration.innerText = `${totalMin}:${totalSec}`;
+  });
+  // update playing song current time
+  let currentMin = Math.floor(currentTime / 60);
+  let currentSec = Math.floor(currentTime % 60);
+  if (currentSec < 10) {
+    //if sec is less than 10 then add 0 before it
+    currentSec = `0${currentSec}`;
+  }
+  musicCurrentTime.innerText = `${currentMin}:${currentSec}`;
+});
+
 // update playing song currentTime on according to the progress bar width
 progressArea.addEventListener("mousedown", (e) => {
   if (e.which === 1) {
@@ -62,6 +168,7 @@ document.addEventListener("mousemove", (e) => {
 
   if (clientX >= min && clientX <= max) {
     percent = ((clientX - left) * 100) / width;
+    timer = percent;
     timeProgress(percent);
   }
 
@@ -71,15 +178,10 @@ document.addEventListener("mousemove", (e) => {
   }
 });
 
-body.addEventListener("mouseup", (e) => {
-  e.stopPropagation();
-  isDrag = false;
-});
-
 document.addEventListener("mouseup", (e) => {
   isDrag = false;
   check = true;
-  mainAudio.currentTime = (percent * mainAudio.duration) / 100;
+  mainAudio.currentTime = (timer * mainAudio.duration) / 100;
 });
 
 //change loop, shuffle, repeat icon onclick
@@ -177,8 +279,6 @@ function playingSong(e) {
       allLiTag[j].classList.remove("playing");
       let adDuration = audioTag.getAttribute("t-duration");
       audioTag.innerText = adDuration;
-      // mainAudio.currentTime = 0;
-      percent = 0;
     }
 
     if (allLiTag[j].getAttribute("li-index") == musicIndex) {
@@ -189,120 +289,6 @@ function playingSong(e) {
     allLiTag[j].setAttribute("onclick", "clicked(this)");
   }
 }
-
-window.addEventListener("load", () => {
-  loadMusic(musicIndex);
-  playingSong();
-});
-
-function loadMusic(indexNumb) {
-  musicName.innerText = allMusic[indexNumb - 1].name;
-  musicArtist.innerText = allMusic[indexNumb - 1].artist;
-  musicImg.src = `images/${allMusic[indexNumb - 1].src}.jpg`;
-  mainAudio.src = `songs/${allMusic[indexNumb - 1].src}.mp3`;
-  mainAudio.currentTime = 0;
-  // percent = 0;
-}
-
-//play music function
-function playMusic() {
-  wrapper.classList.add("paused");
-  playPauseBtn.querySelector("i").innerText = "pause";
-  mainAudio.play();
-  // percent = 0;
-}
-
-//pause music function
-function pauseMusic() {
-  wrapper.classList.remove("paused");
-  playPauseBtn.querySelector("i").innerText = "play_arrow";
-  mainAudio.pause();
-}
-
-//prev music function
-function prevMusic() {
-  mainAudio.currentTime = 0;
-  musicIndex--;
-  musicIndex < 1 ? (musicIndex = allMusic.length) : (musicIndex = musicIndex);
-  loadMusic(musicIndex);
-  playMusic();
-  playingSong();
-}
-
-//next music function
-function nextMusic() {
-  mainAudio.currentTime = 0;
-  musicIndex++;
-  musicIndex > allMusic.length ? (musicIndex = 1) : (musicIndex = musicIndex);
-  loadMusic(musicIndex);
-  playMusic();
-  playingSong();
-}
-
-// play or pause button event
-playPauseBtn.addEventListener("click", (e) => {
-  check = true;
-  e.stopPropagation();
-  const isMusicPlay = wrapper.classList.contains("paused");
-  isMusicPlay ? pauseMusic() : playMusic();
-  playingSong();
-});
-
-playPauseBtn.addEventListener("mousedown", (e) => {
-  e.stopPropagation();
-  check = true;
-});
-
-playPauseBtn.addEventListener("mouseup", (e) => {
-  e.stopPropagation();
-});
-
-//prev music button event
-prevBtn.addEventListener("click", (e) => {
-  e.stopPropagation();
-
-  prevMusic();
-});
-
-//next music button event
-nextBtn.addEventListener("click", (e) => {
-  e.stopPropagation();
-
-  nextMusic();
-});
-
-// update progress bar width according to music current time
-mainAudio.addEventListener("timeupdate", (e) => {
-  const currentTime = e.target.currentTime;
-  const duration = e.target.duration;
-
-  if (check) {
-    let progressWidth = (currentTime / duration) * 100;
-    progressBar.style.width = `${progressWidth}%`;
-  }
-
-  let musicCurrentTime = wrapper.querySelector(".current-time"),
-    musicDuration = wrapper.querySelector(".max-duration");
-  mainAudio.addEventListener("loadeddata", () => {
-    // update song total duration
-    let mainAdDuration = mainAudio.duration;
-    let totalMin = Math.floor(mainAdDuration / 60);
-    let totalSec = Math.floor(mainAdDuration % 60);
-    if (totalSec < 10) {
-      //if sec is less than 10 then add 0 before it
-      totalSec = `0${totalSec}`;
-    }
-    musicDuration.innerText = `${totalMin}:${totalSec}`;
-  });
-  // update playing song current time
-  let currentMin = Math.floor(currentTime / 60);
-  let currentSec = Math.floor(currentTime % 60);
-  if (currentSec < 10) {
-    //if sec is less than 10 then add 0 before it
-    currentSec = `0${currentSec}`;
-  }
-  musicCurrentTime.innerText = `${currentMin}:${currentSec}`;
-});
 
 //particular li clicked function
 function clicked(element) {
