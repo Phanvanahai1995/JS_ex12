@@ -16,11 +16,7 @@ time = progressArea.querySelector(".time");
 let musicIndex = Math.floor(Math.random() * allMusic.length + 1);
 (isMusicPaused = true), (isDrag = false);
 
-let clientX,
-  left,
-  percent,
-  timer,
-  check = false;
+let clientX, left, percent, timer;
 
 function clientProgress(e) {
   clientX = e.clientX;
@@ -85,32 +81,19 @@ function nextMusic() {
 }
 
 // play or pause button event
-playPauseBtn.addEventListener("click", (e) => {
-  check = true;
-  e.stopPropagation();
+playPauseBtn.addEventListener("click", () => {
   const isMusicPlay = wrapper.classList.contains("paused");
   isMusicPlay ? pauseMusic() : playMusic();
   playingSong();
 });
 
-playPauseBtn.addEventListener("mousedown", (e) => {
-  e.stopPropagation();
-  check = true;
-});
-
-playPauseBtn.addEventListener("mouseup", (e) => {
-  e.stopPropagation();
-});
-
 //prev music button event
-prevBtn.addEventListener("click", (e) => {
-  e.stopPropagation();
+prevBtn.addEventListener("click", () => {
   prevMusic();
 });
 
 //next music button event
-nextBtn.addEventListener("click", (e) => {
-  e.stopPropagation();
+nextBtn.addEventListener("click", () => {
   nextMusic();
 });
 
@@ -118,11 +101,8 @@ nextBtn.addEventListener("click", (e) => {
 mainAudio.addEventListener("timeupdate", (e) => {
   const currentTime = e.target.currentTime;
   const duration = e.target.duration;
-
-  if (check) {
-    let progressWidth = (currentTime / duration) * 100;
-    progressBar.style.width = `${progressWidth}%`;
-  }
+  let progressWidth = (currentTime / duration) * 100;
+  progressBar.style.width = `${progressWidth}%`;
 
   let musicCurrentTime = wrapper.querySelector(".current-time"),
     musicDuration = wrapper.querySelector(".max-duration");
@@ -149,16 +129,14 @@ mainAudio.addEventListener("timeupdate", (e) => {
 
 // update playing song currentTime on according to the progress bar width
 progressArea.addEventListener("mousedown", (e) => {
-  if (e.which === 1) {
-    isDrag = true;
-    clientProgress(e);
-    const percent = ((clientX - left) * 100) / width;
-    progressBar.style.width = `${percent}%`;
-    mainAudio.currentTime = (percent * mainAudio.duration) / 100;
+  isDrag = true;
+  clientProgress(e);
+  const percent = ((clientX - left) * 100) / width;
+  progressBar.style.width = `${percent}%`;
+  mainAudio.currentTime = (percent * mainAudio.duration) / 100;
 
-    playMusic(); //calling playMusic function
-    playingSong();
-  }
+  playMusic(); //calling playMusic function
+  playingSong();
 });
 
 document.addEventListener("mousemove", (e) => {
@@ -168,20 +146,17 @@ document.addEventListener("mousemove", (e) => {
 
   if (clientX >= min && clientX <= max) {
     percent = ((clientX - left) * 100) / width;
-    timer = percent;
     timeProgress(percent);
   }
 
   if (isDrag) {
-    check = false;
     progressBar.style.width = `${percent}%`;
+    mainAudio.currentTime = (percent * mainAudio.duration) / 100;
   }
 });
 
 document.addEventListener("mouseup", (e) => {
   isDrag = false;
-  check = true;
-  mainAudio.currentTime = (timer * mainAudio.duration) / 100;
 });
 
 //change loop, shuffle, repeat icon onclick
@@ -269,7 +244,7 @@ for (let i = 0; i < allMusic.length; i++) {
 }
 
 //play particular song from the list onclick of li tag
-function playingSong(e) {
+function playingSong() {
   const allLiTag = ulTag.querySelectorAll("li");
 
   for (let j = 0; j < allLiTag.length; j++) {
